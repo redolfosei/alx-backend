@@ -1,52 +1,40 @@
-#!/usr/bin/python3
-""" Module for impl3m3nting LRU Caching
-"""
+#!/usr/bin/env python3
+'''Task 3: LRU Caching
+'''
 
-from collections import deque
 
-BaseCaching = __import__("base_caching").BaseCaching
+from collections import OrderedDict
+from base_caching import BaseCaching
 
 
 class LRUCache(BaseCaching):
-    """ Create a class LRUCache that inherits from BaseCaching and is a caching
-    system
-    """
+    '''A class `LRUCache` that inherits from
+       `BaseCaching` and is a caching system
+    '''
 
     def __init__(self):
-        """ Init
-        """
+        '''initialize the cache
+        '''
         super().__init__()
-        self.queue = deque()
+        self.cache_data = OrderedDict()
 
     def put(self, key, item):
-        """ Assigns to the dictionary self.cache_data the item value fo
+        """Adds an item in the cache.
         """
-        if key and item:
-            if key in self.cache_data:
-                self.queue.remove(key)
-            elif self.is_full():
-                self.evict()
-            self.queue.append(key)
+        if key is None or item is None:
+            return
+        if key not in self.cache_data:
+            if len(self.cache_data) + 1 > BaseCaching.MAX_ITEMS:
+                lru_key, _ = self.cache_data.popitem(True)
+                print("DISCARD:", lru_key)
+            self.cache_data[key] = item
+            self.cache_data.move_to_end(key, last=False)
+        else:
             self.cache_data[key] = item
 
     def get(self, key):
-        """ Must return the value in self.cache_data linked to key.
+        """Retrieves an item by key.
         """
-        if key in self.cache_data:
-            self.queue.remove(key)
-            self.queue.append(key)
-            return self.cache_data.get(key)
-
-    def is_full(self):
-        """ Checks the lenght of items in self.cache_data in relation to 
-        BaseCaching.MAX_ITEMS
-        """
-        return len(self.cache_data) >= self.MAX_ITEMS
-
-    def evict(self):
-        """ you must print DISCARD: with the key discarded and following by a
-        new line
-        """
-        popped = self.queue.popleft()
-        del self.cache_data[popped]
-        print("DISCARD: " + str(popped))
+        if key is not None and key in self.cache_data:
+            self.cache_data.move_to_end(key, last=False)
+        return self.cache_data.get(key, None)
