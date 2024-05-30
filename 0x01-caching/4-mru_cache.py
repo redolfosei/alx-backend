@@ -1,38 +1,60 @@
 #!/usr/bin/env python3
-"""Task 4: MRU Caching.
 """
-from collections import OrderedDict
-
-from base_caching import BaseCaching
+MRU Caching
+"""
+BaseCaching = __import__('base_caching').BaseCaching
 
 
 class MRUCache(BaseCaching):
-    """A class `MRUCache` that inherits
-       from `BaseCaching` and is a caching system
+    """ A Class that inherits from BaseCaching
+    and is a caching system
     """
     def __init__(self):
-        """Initializes the cache.
+        """ Initializing
         """
+        self.mem = []
         super().__init__()
-        self.cache_data = OrderedDict()
 
     def put(self, key, item):
-        """Adds an item in the cache.
+        """ Assign to the dictionary self.cache_data the item
+        value for the key key
         """
         if key is None or item is None:
-            return
-        if key not in self.cache_data:
-            if len(self.cache_data) + 1 > BaseCaching.MAX_ITEMS:
-                mru_key, _ = self.cache_data.popitem(False)
-                print("DISCARD:", mru_key)
-            self.cache_data[key] = item
-            self.cache_data.move_to_end(key, last=False)
+            pass
         else:
-            self.cache_data[key] = item
+            if len(self.cache_data) < BaseCaching.MAX_ITEMS:
+                self.cache_data[key] = item
+                if key not in self.mem:
+                    self.mem.append(key)
+                    #   print(f"1st {self.mem}")
+                else:
+                    self.mem.remove(key)
+                    self.mem.append(key)
+                    #    print(f"2nd {self.mem}")
+            else:
+                if key in self.cache_data:
+                    self.cache_data[key] = item
+                    self.mem.remove(key)
+                    self.mem.append(key)
+                    #     print(f"3rd {self.mem}")
+                else:
+                    mru_key = self.mem[-1]
+                    del self.cache_data[mru_key]
+                    self.cache_data[key] = item
+                    self.mem.remove(mru_key)
+                    self.mem.append(key)
+                    print(f"DISCARD: {mru_key}")
+                    #      print(f"4th {self.mem}")
 
     def get(self, key):
-        """Retrieves an item by key.
+        """ returns the value in self.cache_data
+        linked to key
         """
-        if key is not None and key in self.cache_data:
-            self.cache_data.move_to_end(key, last=False)
-        return self.cache_data.get(key, None)
+        if key is None or key not in self.cache_data:
+            return None
+
+        self.mem.remove(key)
+        self.mem.append(key)
+        # print(f"5th {self.mem}")
+
+        return self.cache_data[key]
